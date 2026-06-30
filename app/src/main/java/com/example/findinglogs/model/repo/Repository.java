@@ -10,7 +10,7 @@ import com.example.findinglogs.model.util.Logger;
 
 import java.util.HashMap;
 
-public class Repository {
+public class Repository implements IRepository {
     private static final String TAG = Repository.class.getSimpleName();
 
     private final WeatherManager weatherManager;
