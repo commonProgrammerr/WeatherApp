@@ -59,7 +59,7 @@ public class Repository implements IRepository {
         int count = Integer.parseInt(countStr);
         for (int i = 1; i <= count; i++) {
             String value = sharedPrefManagerManager.readString(LOC_PREFIX + i);
-            if (value != null) {
+            if (value != null && !localizations.containsValue(value)) {
                 localizations.put(String.valueOf(i), value);
             }
         }
