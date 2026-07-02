@@ -94,8 +94,12 @@ fun WeatherNavGraph(
                                 navController.navigate(Screen.AddCity.route)
                             },
                             onDeleteCity = { index ->
-                                repo.removeCity((index + 1).toString())
-                                viewModel.refresh()
+                                val hasMyLocation = viewModel.getMyLocationLatLon() != null
+                                val keyIndex = if (hasMyLocation) index else index + 1
+                                if (keyIndex > 0) {
+                                    repo.removeCity(keyIndex.toString())
+                                    viewModel.refresh()
+                                }
                             }
                         )
                     }

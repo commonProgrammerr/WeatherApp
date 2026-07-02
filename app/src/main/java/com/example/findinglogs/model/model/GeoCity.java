@@ -2,6 +2,8 @@ package com.example.findinglogs.model.model;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.Locale;
+
 public class GeoCity {
     private String name;
     private double lat;
@@ -37,6 +39,6 @@ public class GeoCity {
     }
 
     public String getCoordinates() {
-        return lat + "," + lon;
+        return String.format(Locale.US, "%.6f,%.6f", lat, lon);
     }
 }

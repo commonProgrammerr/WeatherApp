@@ -113,12 +113,14 @@ fun WeatherCard(
                 )
             }
 
-            IconButton(onClick = onDelete) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Remover cidade",
-                    tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
-                )
+            if (!weather.isCurrentLocation) {
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Remover cidade",
+                        tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                    )
+                }
             }
 
             Image(

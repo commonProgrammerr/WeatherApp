@@ -2,6 +2,8 @@ package com.example.findinglogs.model.model;
 
 import androidx.annotation.NonNull;
 
+import java.util.Objects;
+
 public class WeatherDetail {
     private String main;
     private String description;
@@ -32,6 +34,21 @@ public class WeatherDetail {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        WeatherDetail that = (WeatherDetail) o;
+        return Objects.equals(main, that.main)
+                && Objects.equals(description, that.description)
+                && Objects.equals(icon, that.icon);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(main, description, icon);
     }
 
     @NonNull

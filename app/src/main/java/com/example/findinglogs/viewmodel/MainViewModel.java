@@ -82,15 +82,18 @@ public class MainViewModel extends AndroidViewModel {
         }
         int finalTotalRequests = totalRequests;
 
+        if (finalTotalRequests == 0) {
+            finishFetch(updatedList, false);
+            return;
+        }
+
         if (myLocationLatLon != null) {
-            String[] parts = myLocationLatLon.split(",");
             mRepository.retrieveForecast(myLocationLatLon, new WeatherCallback() {
                 @Override
                 public void onSuccess(Weather result) {
                     if (currentGeneration != fetchGeneration) return;
                     synchronized (completedCount) {
                         result.setCurrentLocation(true);
-                        result.setName("Minha Localização");
                         updatedList.add(0, result);
                         completedCount[0]++;
                         if (completedCount[0] == finalTotalRequests) {

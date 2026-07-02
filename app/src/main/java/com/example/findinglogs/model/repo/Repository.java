@@ -95,6 +95,12 @@ public class Repository implements IRepository {
         int count = Integer.parseInt(countStr);
         int keyInt = Integer.parseInt(key);
 
+        // Validate key is within range
+        if (keyInt < 1 || keyInt > count) {
+            if (Logger.ISLOGABLE) Logger.w(TAG, "removeCity: invalid key " + key);
+            return;
+        }
+
         // Shift subsequent entries forward
         for (int i = keyInt + 1; i <= count; i++) {
             String value = sharedPrefManagerManager.readString(LOC_PREFIX + i);
