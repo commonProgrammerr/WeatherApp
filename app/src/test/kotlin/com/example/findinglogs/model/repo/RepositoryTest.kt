@@ -67,7 +67,7 @@ class RepositoryTest {
         val app = RuntimeEnvironment.getApplication()
         val repository = Repository(app)
 
-        repository.addCity("-15.7934,-47.8822") // Brasília
+        repository.addCity("Brasília", "-15.7934,-47.8822")
         val localizations = repository.getLocalizations()
 
         assertThat(localizations).hasSize(6)
