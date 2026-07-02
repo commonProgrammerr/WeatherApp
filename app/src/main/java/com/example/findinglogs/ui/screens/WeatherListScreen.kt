@@ -6,11 +6,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -25,13 +27,23 @@ import com.example.findinglogs.ui.components.WeatherCard
 fun WeatherListScreen(
     weatherList: List<Weather>,
     onCityClick: (Weather) -> Unit,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    onAddCity: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(text = "Weather App", style = MaterialTheme.typography.titleLarge)
+                },
+                actions = {
+                    IconButton(onClick = onAddCity) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Adicionar cidade",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                 },
                 colors = androidx.compose.material3.TopAppBarDefaults
                     .centerAlignedTopAppBarColors(
