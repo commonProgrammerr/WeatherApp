@@ -80,6 +80,7 @@ dependencies {
     implementation(libs.compose.material.icons.extended)
     implementation(libs.activity.compose)
     implementation(libs.compose.runtime.livedata)
+    implementation(libs.navigation.compose)
     debugImplementation(libs.compose.ui.tooling)
 
     // Test dependencies

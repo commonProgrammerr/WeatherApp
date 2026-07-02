@@ -20,6 +20,8 @@ robolectric = "4.14.1"
 archCoreTesting = "2.2.0"
 coroutinesTest = "1.9.0"
 composeBom = "2024.12.01"
+navigationCompose = "2.8.5"
+navigationTesting = "2.8.5"
 
 [libraries]
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
@@ -50,6 +52,7 @@ compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity" }
 compose-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 
 
 [plugins]
