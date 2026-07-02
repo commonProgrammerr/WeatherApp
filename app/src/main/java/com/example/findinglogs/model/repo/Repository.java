@@ -1,6 +1,5 @@
 package com.example.findinglogs.model.repo;
 
-
 import android.app.Application;
 
 import com.example.findinglogs.model.repo.local.SharedPrefManager;
@@ -9,9 +8,12 @@ import com.example.findinglogs.model.repo.remote.api.WeatherCallback;
 import com.example.findinglogs.model.util.Logger;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class Repository implements IRepository {
     private static final String TAG = Repository.class.getSimpleName();
+    private static final String LOC_COUNT_KEY = "loc_count";
+    private static final String LOC_PREFIX = "loc_";
 
     private final WeatherManager weatherManager;
     private final SharedPrefManager sharedPrefManagerManager;
@@ -20,6 +22,18 @@ public class Repository implements IRepository {
         if (Logger.ISLOGABLE) Logger.d(TAG, "Repository()");
         weatherManager = new WeatherManager();
         sharedPrefManagerManager = SharedPrefManager.getInstance(application);
+        seedDefaultCities();
+    }
+
+    private void seedDefaultCities() {
+        if (sharedPrefManagerManager.readString(LOC_COUNT_KEY) != null) return;
+
+        sharedPrefManagerManager.writeString(LOC_PREFIX + "1", "-8.05428,-34.8813");   // Recife
+        sharedPrefManagerManager.writeString(LOC_PREFIX + "2", "-9.39416,-40.5096");   // Petrolina
+        sharedPrefManagerManager.writeString(LOC_PREFIX + "3", "-8.284547,-35.969863"); // Caruaru
+        sharedPrefManagerManager.writeString(LOC_PREFIX + "4", "-3.119027,-60.021731"); // Manaus
+        sharedPrefManagerManager.writeString(LOC_PREFIX + "5", "-23.550520,-46.633308"); // São Paulo
+        sharedPrefManagerManager.writeString(LOC_COUNT_KEY, "5");
     }
 
     public void retrieveForecast(String latLon, WeatherCallback callback) {
@@ -37,14 +51,18 @@ public class Repository implements IRepository {
         return sharedPrefManagerManager.readString(key);
     }
 
-    // TODO: change this method to retrieve localizations from a database or API
-    public HashMap<String, String> getLocalizations() {
-        HashMap<String, String> localizations = new HashMap<>();
-        localizations.put("1", "-8.05428,-34.8813");   // Recife
-        localizations.put("2", "-9.39416,-40.5096");   // Petrolina
-        localizations.put("3", "-8.284547,-35.969863"); // Caruaru
-        localizations.put("4", "-3.119027,-60.021731"); // Manaus
-        localizations.put("5", "-23.550520,-46.633308"); // São Paulo
+    public Map<String, String> getLocalizations() {
+        Map<String, String> localizations = new HashMap<>();
+        String countStr = sharedPrefManagerManager.readString(LOC_COUNT_KEY);
+        if (countStr == null) return localizations;
+
+        int count = Integer.parseInt(countStr);
+        for (int i = 1; i <= count; i++) {
+            String value = sharedPrefManagerManager.readString(LOC_PREFIX + i);
+            if (value != null) {
+                localizations.put(String.valueOf(i), value);
+            }
+        }
         return localizations;
     }
 }
