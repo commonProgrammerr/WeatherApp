@@ -65,4 +65,12 @@ public class Repository implements IRepository {
         }
         return localizations;
     }
+
+    public void addCity(String coordinates) {
+        String countStr = sharedPrefManagerManager.readString(LOC_COUNT_KEY);
+        int count = countStr != null ? Integer.parseInt(countStr) : 0;
+        count++;
+        sharedPrefManagerManager.writeString(LOC_PREFIX + count, coordinates);
+        sharedPrefManagerManager.writeString(LOC_COUNT_KEY, String.valueOf(count));
+    }
 }

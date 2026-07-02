@@ -8,6 +8,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.findinglogs.model.model.Weather
+import com.example.findinglogs.model.repo.Repository
+import com.example.findinglogs.ui.screens.AddCityScreen
 import com.example.findinglogs.ui.screens.WeatherDetailScreen
 import com.example.findinglogs.ui.screens.WeatherListScreen
 import com.example.findinglogs.viewmodel.MainViewModel
@@ -30,7 +32,10 @@ fun WeatherNavGraph(
                 onCityClick = { weather ->
                     navController.navigate(Screen.Detail.createRoute(weather.name ?: ""))
                 },
-                onRefresh = { viewModel.refresh() }
+                onRefresh = { viewModel.refresh() },
+                onAddCity = {
+                    navController.navigate(Screen.AddCity.route)
+                }
             )
         }
 
@@ -40,6 +45,19 @@ fun WeatherNavGraph(
             WeatherDetailScreen(
                 weather = weather,
                 onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.AddCity.route) {
+            val repository = Repository(
+                navController.context.applicationContext as android.app.Application
+            )
+            AddCityScreen(
+                repository = repository,
+                onBack = {
+                    viewModel.refresh()
+                    navController.popBackStack()
+                }
             )
         }
     }

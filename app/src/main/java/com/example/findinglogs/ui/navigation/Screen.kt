@@ -6,4 +6,6 @@ sealed class Screen(val route: String) {
     data object Detail : Screen("detail/{cityName}") {
         fun createRoute(cityName: String): String = "detail/$cityName"
     }
+
+    data object AddCity : Screen("add_city")
 }
