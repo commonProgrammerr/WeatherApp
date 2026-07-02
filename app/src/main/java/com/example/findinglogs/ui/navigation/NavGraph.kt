@@ -1,6 +1,8 @@
 package com.example.findinglogs.ui.navigation
 
+import android.net.Uri
 import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.remember
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -75,9 +77,11 @@ fun WeatherNavGraph(
                             )
                         }
                     } else {
-                        val repo = Repository(
-                            navController.context.applicationContext as android.app.Application
-                        )
+                        val repo = remember {
+                            Repository(
+                                navController.context.applicationContext as android.app.Application
+                            )
+                        }
                         WeatherListScreen(
                             weatherList = state.data,
                             onCityClick = { weather ->
@@ -100,7 +104,7 @@ fun WeatherNavGraph(
         }
 
         composable(Screen.Detail.route) { backStackEntry ->
-            val cityName = backStackEntry.arguments?.getString("cityName") ?: ""
+            val cityName = Uri.decode(backStackEntry.arguments?.getString("cityName") ?: "")
             val weather = weatherList.find { it.name == cityName }
             WeatherDetailScreen(
                 weather = weather,

@@ -32,6 +32,7 @@ public class MainViewModel extends AndroidViewModel {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable fetchRunnable = this::fetchAllForecasts;
     private boolean isFetching = false;
+    private int fetchGeneration = 0;
 
     public MainViewModel(Application application) {
         super(application);
@@ -66,7 +67,9 @@ public class MainViewModel extends AndroidViewModel {
 
         if (Logger.ISLOGABLE) Logger.d(TAG, "fetchAllForecasts()");
         isFetching = true;
-        _uiState.setValue(UiState.Loading.INSTANCE);
+        fetchGeneration++;
+        int currentGeneration = fetchGeneration;
+        _uiState.postValue(UiState.Loading.INSTANCE);
         Map<String, String> localizations = mRepository.getLocalizations();
         List<Weather> updatedList = new ArrayList<>();
         int[] completedCount = {0};
@@ -76,6 +79,7 @@ public class MainViewModel extends AndroidViewModel {
             mRepository.retrieveForecast(latlon, new WeatherCallback() {
                 @Override
                 public void onSuccess(Weather result) {
+                    if (currentGeneration != fetchGeneration) return;
                     synchronized (completedCount) {
                         updatedList.add(result);
                         completedCount[0]++;
@@ -87,6 +91,7 @@ public class MainViewModel extends AndroidViewModel {
 
                 @Override
                 public void onFailure(String error) {
+                    if (currentGeneration != fetchGeneration) return;
                     synchronized (completedCount) {
                         hasError[0] = true;
                         completedCount[0]++;
@@ -102,10 +107,10 @@ public class MainViewModel extends AndroidViewModel {
     private void finishFetch(List<Weather> results, boolean hadError) {
         isFetching = false;
         if (hadError) {
-            _uiState.setValue(new UiState.Error("Erro ao carregar dados do clima"));
+            _uiState.postValue(new UiState.Error("Erro ao carregar dados do clima"));
         } else {
-            _weatherList.setValue(new ArrayList<>(results));
-            _uiState.setValue(new UiState.Success(new ArrayList<>(results)));
+            _weatherList.postValue(new ArrayList<>(results));
+            _uiState.postValue(new UiState.Success(new ArrayList<>(results)));
         }
         handler.postDelayed(fetchRunnable, FETCH_INTERVAL);
     }
