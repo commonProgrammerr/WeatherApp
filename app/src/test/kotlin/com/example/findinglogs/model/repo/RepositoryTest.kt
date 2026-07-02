@@ -61,4 +61,16 @@ class RepositoryTest {
         // Should have deduplicated the repeated coordinate
         assertThat(localizations).hasSize(5)
     }
+
+    @Test
+    fun `addCity persiste nova cidade no SharedPreferences`() {
+        val app = RuntimeEnvironment.getApplication()
+        val repository = Repository(app)
+
+        repository.addCity("-15.7934,-47.8822") // Brasília
+        val localizations = repository.getLocalizations()
+
+        assertThat(localizations).hasSize(6)
+        assertThat(localizations.values).contains("-15.7934,-47.8822")
+    }
 }
