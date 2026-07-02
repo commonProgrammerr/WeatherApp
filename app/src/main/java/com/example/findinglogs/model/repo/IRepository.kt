@@ -8,4 +8,5 @@ interface IRepository {
     fun readString(key: String): String
     fun getLocalizations(): Map<String, String>
     fun addCity(coordinates: String)
+    fun removeCity(key: String)
 }

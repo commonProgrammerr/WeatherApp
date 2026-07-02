@@ -5,6 +5,7 @@ import com.example.findinglogs.model.model.Weather
 import com.example.findinglogs.model.model.WeatherInfo
 import com.example.findinglogs.model.repo.IRepository
 import com.example.findinglogs.model.repo.remote.api.WeatherCallback
+import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -46,11 +47,29 @@ class MainViewModelTest {
     }
 
     @Test
-    fun `refresh durante fetch pendente nao inicia nova requisicao`() {
+    fun `refresh forca nova requisicao mesmo durante fetch pendente`() {
         val mockRepo = mockk<IRepository>(relaxed = true)
         every { mockRepo.getLocalizations() } returns mapOf("1" to "-8.0,-34.9")
 
-        // Capture callback to simulate slow network (don't respond yet)
+        val callbackSlots = mutableListOf<WeatherCallback>()
+        every { mockRepo.retrieveForecast(any(), capture(callbackSlots)) } returns Unit
+
+        val viewModel = MainViewModel(
+            RuntimeEnvironment.getApplication(),
+            mockRepo
+        )
+
+        // refresh() deve forcar uma nova fetch mesmo se uma estiver pendente
+        viewModel.refresh()
+
+        verify(exactly = 2) { mockRepo.retrieveForecast(any(), any()) }
+    }
+
+    @Test
+    fun `estado inicial do UiState eh Loading`() {
+        val mockRepo = mockk<IRepository>(relaxed = true)
+        every { mockRepo.getLocalizations() } returns mapOf("1" to "-8.0,-34.9")
+
         val callbackSlot = slot<WeatherCallback>()
         every { mockRepo.retrieveForecast(any(), capture(callbackSlot)) } returns Unit
 
@@ -59,15 +78,46 @@ class MainViewModelTest {
             mockRepo
         )
 
-        // First fetch is in progress (callback not invoked)
-        // Call refresh while fetch is pending — should be debounced
-        viewModel.refresh()
+        val state = viewModel.getUiState().value
+        assertThat(state).isInstanceOf(UiState.Loading::class.java)
+    }
 
-        // Complete the pending callback
+    @Test
+    fun `UiState transita para Success apos dados carregados`() {
+        val mockRepo = mockk<IRepository>(relaxed = true)
+        every { mockRepo.getLocalizations() } returns mapOf("1" to "-8.0,-34.9")
+
+        val callbackSlot = slot<WeatherCallback>()
+        every { mockRepo.retrieveForecast(any(), capture(callbackSlot)) } returns Unit
+
+        val viewModel = MainViewModel(
+            RuntimeEnvironment.getApplication(),
+            mockRepo
+        )
+
         callbackSlot.captured.onSuccess(createWeather("Recife"))
 
-        // retrieveForecast should have been called exactly once
-        // (the refresh call should not trigger a second request)
-        verify(exactly = 1) { mockRepo.retrieveForecast(any(), any()) }
+        val state = viewModel.getUiState().value
+        assertThat(state).isInstanceOf(UiState.Success::class.java)
+        assertThat((state as UiState.Success).data).hasSize(1)
+    }
+
+    @Test
+    fun `UiState transita para Error quando fetch falha`() {
+        val mockRepo = mockk<IRepository>(relaxed = true)
+        every { mockRepo.getLocalizations() } returns mapOf("1" to "-8.0,-34.9")
+
+        val callbackSlot = slot<WeatherCallback>()
+        every { mockRepo.retrieveForecast(any(), capture(callbackSlot)) } returns Unit
+
+        val viewModel = MainViewModel(
+            RuntimeEnvironment.getApplication(),
+            mockRepo
+        )
+
+        callbackSlot.captured.onFailure("Network error")
+
+        val state = viewModel.getUiState().value
+        assertThat(state).isInstanceOf(UiState.Error::class.java)
     }
 }
