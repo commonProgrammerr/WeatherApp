@@ -4,10 +4,14 @@ package com.example.findinglogs.model.repo.remote;
 import androidx.annotation.NonNull;
 
 import com.example.findinglogs.BuildConfig;
+import com.example.findinglogs.model.model.GeoCity;
 import com.example.findinglogs.model.model.Weather;
+import com.example.findinglogs.model.repo.remote.api.GeoCallback;
 import com.example.findinglogs.model.repo.remote.api.ServicesInterfaceWrapper;
 import com.example.findinglogs.model.repo.remote.api.WeatherCallback;
 import com.example.findinglogs.model.util.Logger;
+
+import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -49,6 +53,33 @@ public class WeatherManager {
 
                     @Override
                     public void onFailure(@NonNull Call<Weather> call,
+                                          @NonNull Throwable throwable) {
+                        callback.onFailure(String.valueOf(throwable.getMessage()));
+                    }
+                });
+    }
+
+    public void searchCities(String query, GeoCallback callback) {
+        if (Logger.ISLOGABLE) Logger.d(TAG, "searchCities()");
+        String apiKey = BuildConfig.WEATHER_API_KEY;
+
+        ConnectionManager.getInstance()
+                .getGeocodingConnection()
+                .create(ServicesInterfaceWrapper.GeocodingService.class)
+                .searchCities(query, 5, apiKey).enqueue(new Callback<>() {
+
+                    @Override
+                    public void onResponse(@NonNull Call<List<GeoCity>> call,
+                                           @NonNull Response<List<GeoCity>> resp) {
+                        if (resp.isSuccessful() && resp.body() != null) {
+                            callback.onSuccess(resp.body());
+                        } else {
+                            callback.onFailure(String.valueOf(resp.code()));
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<List<GeoCity>> call,
                                           @NonNull Throwable throwable) {
                         callback.onFailure(String.valueOf(throwable.getMessage()));
                     }

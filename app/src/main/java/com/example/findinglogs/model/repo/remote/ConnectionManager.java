@@ -15,13 +15,16 @@ class ConnectionManager {
     private static final String TAG = ConnectionManager.class.getSimpleName();
 
     private static final String OPEN_WEATHER_DOMAIN = "https://api.openweathermap.org/data/2.5/";
+    private static final String GEOCODING_DOMAIN = "https://api.openweathermap.org/";
 
     private static ConnectionManager instance;
     private static Retrofit sOpenWeatherApiConnection;
+    private static Retrofit sGeocodingConnection;
 
     private ConnectionManager() {
         if (Logger.ISLOGABLE) Logger.d(TAG, "ConnectionManager()");
         sOpenWeatherApiConnection = getOpenWeatherConnection();
+        sGeocodingConnection = buildGeocodingConnection();
     }
 
     static ConnectionManager getInstance() {
@@ -60,5 +63,25 @@ class ConnectionManager {
 
     public Retrofit getWeatherConnection() {
         return sOpenWeatherApiConnection;
+    }
+
+    public Retrofit getGeocodingConnection() {
+        return sGeocodingConnection;
+    }
+
+    private Retrofit buildGeocodingConnection() {
+        OkHttpClient httpClient = new OkHttpClient.Builder()
+                .addInterceptor(getLoggerClient())
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .readTimeout(5, TimeUnit.SECONDS)
+                .writeTimeout(5, TimeUnit.SECONDS)
+                .build();
+
+        return new Retrofit.Builder()
+                .baseUrl(GEOCODING_DOMAIN)
+                .addConverterFactory(ScalarsConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(httpClient)
+                .build();
     }
 }

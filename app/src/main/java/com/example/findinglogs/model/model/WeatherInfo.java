@@ -1,7 +1,8 @@
 package com.example.findinglogs.model.model;
 
-
 import androidx.annotation.NonNull;
+
+import java.util.Objects;
 
 public class WeatherInfo {
     private float temp;
@@ -69,6 +70,24 @@ public class WeatherInfo {
 
     public void setHumidity(float humidity) {
         this.humidity = humidity;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        WeatherInfo that = (WeatherInfo) o;
+        return Float.compare(that.temp, temp) == 0
+                && Float.compare(that.feels_like, feels_like) == 0
+                && Float.compare(that.temp_min, temp_min) == 0
+                && Float.compare(that.temp_max, temp_max) == 0
+                && Float.compare(that.pressure, pressure) == 0
+                && Float.compare(that.humidity, humidity) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(temp, feels_like, temp_min, temp_max, pressure, humidity);
     }
 
     @NonNull

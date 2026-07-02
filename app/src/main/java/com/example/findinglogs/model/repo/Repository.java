@@ -4,10 +4,10 @@ import android.app.Application;
 
 import com.example.findinglogs.model.repo.local.SharedPrefManager;
 import com.example.findinglogs.model.repo.remote.WeatherManager;
+import com.example.findinglogs.model.repo.remote.api.GeoCallback;
 import com.example.findinglogs.model.repo.remote.api.WeatherCallback;
 import com.example.findinglogs.model.util.Logger;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -15,6 +15,7 @@ public class Repository implements IRepository {
     private static final String TAG = Repository.class.getSimpleName();
     private static final String LOC_COUNT_KEY = "loc_count";
     private static final String LOC_PREFIX = "loc_";
+    private static final String CITY_NAME_PREFIX = "city_name_";
 
     private final WeatherManager weatherManager;
     private final SharedPrefManager sharedPrefManagerManager;
@@ -29,12 +30,18 @@ public class Repository implements IRepository {
     private void seedDefaultCities() {
         if (sharedPrefManagerManager.readString(LOC_COUNT_KEY) != null) return;
 
-        sharedPrefManagerManager.writeString(LOC_PREFIX + "1", "-8.05428,-34.8813");   // Recife
-        sharedPrefManagerManager.writeString(LOC_PREFIX + "2", "-9.39416,-40.5096");   // Petrolina
-        sharedPrefManagerManager.writeString(LOC_PREFIX + "3", "-8.284547,-35.969863"); // Caruaru
-        sharedPrefManagerManager.writeString(LOC_PREFIX + "4", "-3.119027,-60.021731"); // Manaus
-        sharedPrefManagerManager.writeString(LOC_PREFIX + "5", "-23.550520,-46.633308"); // São Paulo
+        writeCity(1, "Recife", "-8.05428,-34.8813");
+        writeCity(2, "Petrolina", "-9.39416,-40.5096");
+        writeCity(3, "Caruaru", "-8.284547,-35.969863");
+        writeCity(4, "Manaus", "-3.119027,-60.021731");
+        writeCity(5, "São Paulo", "-23.550520,-46.633308");
         sharedPrefManagerManager.writeString(LOC_COUNT_KEY, "5");
+    }
+
+    private void writeCity(int index, String name, String coordinates) {
+        String key = String.valueOf(index);
+        sharedPrefManagerManager.writeString(LOC_PREFIX + key, coordinates);
+        sharedPrefManagerManager.writeString(CITY_NAME_PREFIX + key, name);
     }
 
     public void retrieveForecast(String latLon, WeatherCallback callback) {
@@ -67,11 +74,17 @@ public class Repository implements IRepository {
         return localizations;
     }
 
-    public void addCity(String coordinates) {
+    public String getCityName(String key) {
+        return sharedPrefManagerManager.readString(CITY_NAME_PREFIX + key);
+    }
+
+    public void addCity(String name, String coordinates) {
         String countStr = sharedPrefManagerManager.readString(LOC_COUNT_KEY);
         int count = countStr != null ? Integer.parseInt(countStr) : 0;
         count++;
-        sharedPrefManagerManager.writeString(LOC_PREFIX + count, coordinates);
+        String key = String.valueOf(count);
+        sharedPrefManagerManager.writeString(LOC_PREFIX + key, coordinates);
+        sharedPrefManagerManager.writeString(CITY_NAME_PREFIX + key, name);
         sharedPrefManagerManager.writeString(LOC_COUNT_KEY, String.valueOf(count));
     }
 
@@ -82,15 +95,26 @@ public class Repository implements IRepository {
         int count = Integer.parseInt(countStr);
         int keyInt = Integer.parseInt(key);
 
+        // Validate key is within range
+        if (keyInt < 1 || keyInt > count) {
+            if (Logger.ISLOGABLE) Logger.w(TAG, "removeCity: invalid key " + key);
+            return;
+        }
+
         // Shift subsequent entries forward
         for (int i = keyInt + 1; i <= count; i++) {
             String value = sharedPrefManagerManager.readString(LOC_PREFIX + i);
+            String name = sharedPrefManagerManager.readString(CITY_NAME_PREFIX + i);
             if (value != null) {
                 sharedPrefManagerManager.writeString(LOC_PREFIX + (i - 1), value);
+                sharedPrefManagerManager.writeString(CITY_NAME_PREFIX + (i - 1), name);
             }
         }
 
-        // Update count (last entry falls out of range)
         sharedPrefManagerManager.writeString(LOC_COUNT_KEY, String.valueOf(count - 1));
+    }
+
+    public void searchCities(String query, GeoCallback callback) {
+        weatherManager.searchCities(query, callback);
     }
 }
