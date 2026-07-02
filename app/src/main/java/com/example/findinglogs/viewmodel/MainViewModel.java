@@ -10,19 +10,20 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.findinglogs.model.model.Weather;
+import com.example.findinglogs.model.repo.IRepository;
 import com.example.findinglogs.model.repo.Repository;
 import com.example.findinglogs.model.repo.remote.api.WeatherCallback;
 import com.example.findinglogs.model.util.Logger;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainViewModel extends AndroidViewModel {
 
     private static final String TAG = MainViewModel.class.getSimpleName();
     private static final int FETCH_INTERVAL = 120_000;
-    private final Repository mRepository;
+    private final IRepository mRepository;
     private final MutableLiveData<List<Weather>> _weatherList = new MutableLiveData<>(new ArrayList<>());
     private final LiveData<List<Weather>> weatherList = _weatherList;
 
@@ -32,6 +33,13 @@ public class MainViewModel extends AndroidViewModel {
     public MainViewModel(Application application) {
         super(application);
         mRepository = new Repository(application);
+        startFetching();
+    }
+
+    // Constructor for testing — allows injecting a mock IRepository
+    MainViewModel(Application application, IRepository repository) {
+        super(application);
+        mRepository = repository;
         startFetching();
     }
 
@@ -46,7 +54,7 @@ public class MainViewModel extends AndroidViewModel {
 
     private void fetchAllForecasts() {
         if (Logger.ISLOGABLE) Logger.d(TAG, "fetchAllForecasts()");
-        HashMap<String, String> localizations = mRepository.getLocalizations();
+        Map<String, String> localizations = mRepository.getLocalizations();
         List<Weather> updatedList = new ArrayList<>();
 
         for (String latlon : localizations.values()) {
@@ -76,5 +84,9 @@ public class MainViewModel extends AndroidViewModel {
 
     public void retrieveForecast(String latLon, WeatherCallback callback) {
         mRepository.retrieveForecast(latLon, callback);
+    }
+
+    public void refresh() {
+        fetchAllForecasts();
     }
 }
