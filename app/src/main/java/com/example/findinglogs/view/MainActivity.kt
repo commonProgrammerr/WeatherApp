@@ -34,13 +34,7 @@ class MainActivity : ComponentActivity() {
                             Toast.LENGTH_SHORT
                         ).show()
                     },
-                    onRefresh = {
-                        Toast.makeText(
-                            this@MainActivity,
-                            "Atualizando... (em breve)",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+                    onRefresh = { viewModel.refresh() }
                 )
             }
         }
