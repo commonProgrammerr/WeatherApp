@@ -42,4 +42,23 @@ class RepositoryTest {
         assertThat(localizations).hasSize(6)
         assertThat(localizations).containsEntry("6", "-15.7934,-47.8822")
     }
+
+    @Test
+    fun `getLocalizations filtra coordenadas duplicadas`() {
+        val app = RuntimeEnvironment.getApplication()
+
+        // Seed data
+        Repository(app)
+
+        // Add a city with coordinates that already exist
+        val prefs = SharedPrefManager.getInstance(app)
+        prefs.writeString("loc_6", "-8.05428,-34.8813") // same as Recife (loc_1)
+        prefs.writeString("loc_count", "6")
+
+        val repo = Repository(app)
+        val localizations = repo.getLocalizations()
+
+        // Should have deduplicated the repeated coordinate
+        assertThat(localizations).hasSize(5)
+    }
 }
