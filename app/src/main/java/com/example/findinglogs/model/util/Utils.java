@@ -1,7 +1,6 @@
 package com.example.findinglogs.model.util;
 
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
@@ -11,12 +10,9 @@ import androidx.core.content.res.ResourcesCompat;
 
 import com.example.findinglogs.R;
 
-import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
 
 public class Utils {
@@ -44,9 +40,10 @@ public class Utils {
         return drawable;
     }
 
+    private static final float KELVIN_OFFSET = 273.15f;
+
     public static String getCelsiusTemperatureFromKevin(float temp) {
-        float tempKelvinRef = 275.15f;
-        float convertToCelsius = temp - tempKelvinRef;
+        float convertToCelsius = temp - KELVIN_OFFSET;
         NumberFormat fmt = DecimalFormat.getNumberInstance(new Locale("pt", "BR"));
         fmt.setMaximumFractionDigits(1);
         fmt.setRoundingMode(RoundingMode.DOWN);
