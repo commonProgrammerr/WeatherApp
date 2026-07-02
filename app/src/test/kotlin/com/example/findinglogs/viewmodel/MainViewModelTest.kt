@@ -47,22 +47,22 @@ class MainViewModelTest {
     }
 
     @Test
-    fun `refresh durante fetch pendente nao inicia nova requisicao`() {
+    fun `refresh forca nova requisicao mesmo durante fetch pendente`() {
         val mockRepo = mockk<IRepository>(relaxed = true)
         every { mockRepo.getLocalizations() } returns mapOf("1" to "-8.0,-34.9")
 
-        val callbackSlot = slot<WeatherCallback>()
-        every { mockRepo.retrieveForecast(any(), capture(callbackSlot)) } returns Unit
+        val callbackSlots = mutableListOf<WeatherCallback>()
+        every { mockRepo.retrieveForecast(any(), capture(callbackSlots)) } returns Unit
 
         val viewModel = MainViewModel(
             RuntimeEnvironment.getApplication(),
             mockRepo
         )
 
+        // refresh() deve forcar uma nova fetch mesmo se uma estiver pendente
         viewModel.refresh()
-        callbackSlot.captured.onSuccess(createWeather("Recife"))
 
-        verify(exactly = 1) { mockRepo.retrieveForecast(any(), any()) }
+        verify(exactly = 2) { mockRepo.retrieveForecast(any(), any()) }
     }
 
     @Test

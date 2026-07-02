@@ -75,6 +75,9 @@ fun WeatherNavGraph(
                             )
                         }
                     } else {
+                        val repo = Repository(
+                            navController.context.applicationContext as android.app.Application
+                        )
                         WeatherListScreen(
                             weatherList = state.data,
                             onCityClick = { weather ->
@@ -85,6 +88,10 @@ fun WeatherNavGraph(
                             onRefresh = { viewModel.refresh() },
                             onAddCity = {
                                 navController.navigate(Screen.AddCity.route)
+                            },
+                            onDeleteCity = { index ->
+                                repo.removeCity((index + 1).toString())
+                                viewModel.refresh()
                             }
                         )
                     }
@@ -107,7 +114,8 @@ fun WeatherNavGraph(
             )
             AddCityScreen(
                 repository = repository,
-                onBack = {
+                onBack = { navController.popBackStack() },
+                onCityAdded = {
                     viewModel.refresh()
                     navController.popBackStack()
                 }

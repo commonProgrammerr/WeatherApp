@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
@@ -28,7 +28,8 @@ fun WeatherListScreen(
     weatherList: List<Weather>,
     onCityClick: (Weather) -> Unit,
     onRefresh: () -> Unit,
-    onAddCity: () -> Unit = {}
+    onAddCity: () -> Unit = {},
+    onDeleteCity: (Int) -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -80,10 +81,11 @@ fun WeatherListScreen(
                     .padding(paddingValues)
                     .padding(top = 8.dp)
             ) {
-                items(items = weatherList, key = { it.name ?: it.hashCode().toString() }) { weather ->
+                itemsIndexed(items = weatherList) { index, weather ->
                     WeatherCard(
                         weather = weather,
-                        onClick = { onCityClick(weather) }
+                        onClick = { onCityClick(weather) },
+                        onDelete = { onDeleteCity(index) }
                     )
                 }
             }

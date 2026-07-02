@@ -121,6 +121,8 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public void refresh() {
+        isFetching = false;
+        handler.removeCallbacks(fetchRunnable);
         fetchAllForecasts();
     }
 }

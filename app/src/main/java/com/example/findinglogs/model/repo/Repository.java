@@ -8,6 +8,7 @@ import com.example.findinglogs.model.repo.remote.api.WeatherCallback;
 import com.example.findinglogs.model.util.Logger;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Repository implements IRepository {
@@ -52,7 +53,7 @@ public class Repository implements IRepository {
     }
 
     public Map<String, String> getLocalizations() {
-        Map<String, String> localizations = new HashMap<>();
+        Map<String, String> localizations = new LinkedHashMap<>();
         String countStr = sharedPrefManagerManager.readString(LOC_COUNT_KEY);
         if (countStr == null) return localizations;
 
@@ -72,5 +73,24 @@ public class Repository implements IRepository {
         count++;
         sharedPrefManagerManager.writeString(LOC_PREFIX + count, coordinates);
         sharedPrefManagerManager.writeString(LOC_COUNT_KEY, String.valueOf(count));
+    }
+
+    public void removeCity(String key) {
+        String countStr = sharedPrefManagerManager.readString(LOC_COUNT_KEY);
+        if (countStr == null) return;
+
+        int count = Integer.parseInt(countStr);
+        int keyInt = Integer.parseInt(key);
+
+        // Shift subsequent entries forward
+        for (int i = keyInt + 1; i <= count; i++) {
+            String value = sharedPrefManagerManager.readString(LOC_PREFIX + i);
+            if (value != null) {
+                sharedPrefManagerManager.writeString(LOC_PREFIX + (i - 1), value);
+            }
+        }
+
+        // Update count (last entry falls out of range)
+        sharedPrefManagerManager.writeString(LOC_COUNT_KEY, String.valueOf(count - 1));
     }
 }

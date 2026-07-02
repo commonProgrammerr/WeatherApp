@@ -11,8 +11,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,7 +34,8 @@ import com.example.findinglogs.ui.theme.cardBackgroundForIcon
 @Composable
 fun WeatherCard(
     weather: Weather,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onDelete: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val isDark = isSystemInDarkTheme()
@@ -94,6 +99,14 @@ fun WeatherCard(
                     text = "Umidade: ${(weatherInfo?.humidity ?: 0f).toInt()}%",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+
+            IconButton(onClick = onDelete) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Remover cidade",
+                    tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
                 )
             }
 

@@ -38,7 +38,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun AddCityScreen(
     repository: IRepository,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onCityAdded: () -> Unit = {}
 ) {
     var coordinates by remember { mutableStateOf("") }
     var cityName by remember { mutableStateOf("") }
@@ -111,6 +112,7 @@ fun AddCityScreen(
                         scope.launch {
                             snackbarHostState.showSnackbar("Cidade adicionada!")
                         }
+                        onCityAdded()
                     } else {
                         scope.launch {
                             snackbarHostState.showSnackbar(
