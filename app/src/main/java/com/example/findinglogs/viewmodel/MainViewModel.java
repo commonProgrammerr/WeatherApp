@@ -26,6 +26,8 @@ public class MainViewModel extends AndroidViewModel {
     private final IRepository mRepository;
     private final MutableLiveData<List<Weather>> _weatherList = new MutableLiveData<>(new ArrayList<>());
     private final LiveData<List<Weather>> weatherList = _weatherList;
+    private final MutableLiveData<UiState> _uiState = new MutableLiveData<>(UiState.Loading.INSTANCE);
+    private final LiveData<UiState> uiState = _uiState;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable fetchRunnable = this::fetchAllForecasts;
@@ -48,6 +50,10 @@ public class MainViewModel extends AndroidViewModel {
         return weatherList;
     }
 
+    public LiveData<UiState> getUiState() {
+        return uiState;
+    }
+
     private void startFetching() {
         fetchAllForecasts();
     }
@@ -60,9 +66,11 @@ public class MainViewModel extends AndroidViewModel {
 
         if (Logger.ISLOGABLE) Logger.d(TAG, "fetchAllForecasts()");
         isFetching = true;
+        _uiState.setValue(UiState.Loading.INSTANCE);
         Map<String, String> localizations = mRepository.getLocalizations();
         List<Weather> updatedList = new ArrayList<>();
         int[] completedCount = {0};
+        boolean[] hasError = {false};
 
         for (String latlon : localizations.values()) {
             mRepository.retrieveForecast(latlon, new WeatherCallback() {
@@ -72,9 +80,7 @@ public class MainViewModel extends AndroidViewModel {
                         updatedList.add(result);
                         completedCount[0]++;
                         if (completedCount[0] == localizations.size()) {
-                            _weatherList.setValue(new ArrayList<>(updatedList));
-                            isFetching = false;
-                            handler.postDelayed(fetchRunnable, FETCH_INTERVAL);
+                            finishFetch(updatedList, hasError[0]);
                         }
                     }
                 }
@@ -82,15 +88,26 @@ public class MainViewModel extends AndroidViewModel {
                 @Override
                 public void onFailure(String error) {
                     synchronized (completedCount) {
+                        hasError[0] = true;
                         completedCount[0]++;
                         if (completedCount[0] == localizations.size()) {
-                            isFetching = false;
-                            handler.postDelayed(fetchRunnable, FETCH_INTERVAL);
+                            finishFetch(updatedList, true);
                         }
                     }
                 }
             });
         }
+    }
+
+    private void finishFetch(List<Weather> results, boolean hadError) {
+        isFetching = false;
+        if (hadError) {
+            _uiState.setValue(new UiState.Error("Erro ao carregar dados do clima"));
+        } else {
+            _weatherList.setValue(new ArrayList<>(results));
+            _uiState.setValue(new UiState.Success(new ArrayList<>(results)));
+        }
+        handler.postDelayed(fetchRunnable, FETCH_INTERVAL);
     }
 
     @Override
