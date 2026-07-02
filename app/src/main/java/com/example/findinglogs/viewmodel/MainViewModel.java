@@ -29,6 +29,7 @@ public class MainViewModel extends AndroidViewModel {
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable fetchRunnable = this::fetchAllForecasts;
+    private boolean isFetching = false;
 
     public MainViewModel(Application application) {
         super(application);
@@ -49,28 +50,44 @@ public class MainViewModel extends AndroidViewModel {
 
     private void startFetching() {
         fetchAllForecasts();
-        handler.postDelayed(fetchRunnable, FETCH_INTERVAL);
     }
 
     private void fetchAllForecasts() {
+        if (isFetching) {
+            if (Logger.ISLOGABLE) Logger.d(TAG, "fetch already in progress, skipping");
+            return;
+        }
+
         if (Logger.ISLOGABLE) Logger.d(TAG, "fetchAllForecasts()");
+        isFetching = true;
         Map<String, String> localizations = mRepository.getLocalizations();
         List<Weather> updatedList = new ArrayList<>();
+        int[] completedCount = {0};
 
         for (String latlon : localizations.values()) {
             mRepository.retrieveForecast(latlon, new WeatherCallback() {
                 @Override
                 public void onSuccess(Weather result) {
-                    updatedList.add(result);
-                    if (updatedList.size() == localizations.size()) {
-                        _weatherList.setValue(updatedList);
-                        handler.postDelayed(fetchRunnable, FETCH_INTERVAL);
+                    synchronized (completedCount) {
+                        updatedList.add(result);
+                        completedCount[0]++;
+                        if (completedCount[0] == localizations.size()) {
+                            _weatherList.setValue(new ArrayList<>(updatedList));
+                            isFetching = false;
+                            handler.postDelayed(fetchRunnable, FETCH_INTERVAL);
+                        }
                     }
                 }
 
                 @Override
                 public void onFailure(String error) {
-                    handler.postDelayed(fetchRunnable, FETCH_INTERVAL);
+                    synchronized (completedCount) {
+                        completedCount[0]++;
+                        if (completedCount[0] == localizations.size()) {
+                            isFetching = false;
+                            handler.postDelayed(fetchRunnable, FETCH_INTERVAL);
+                        }
+                    }
                 }
             });
         }
