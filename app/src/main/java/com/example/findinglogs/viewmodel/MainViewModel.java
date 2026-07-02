@@ -33,6 +33,7 @@ public class MainViewModel extends AndroidViewModel {
     private final Runnable fetchRunnable = this::fetchAllForecasts;
     private boolean isFetching = false;
     private int fetchGeneration = 0;
+    private String myLocationLatLon = null;
 
     public MainViewModel(Application application) {
         super(application);
@@ -75,15 +76,24 @@ public class MainViewModel extends AndroidViewModel {
         int[] completedCount = {0};
         boolean[] hasError = {false};
 
-        for (String latlon : localizations.values()) {
-            mRepository.retrieveForecast(latlon, new WeatherCallback() {
+        int totalRequests = localizations.size();
+        if (myLocationLatLon != null) {
+            totalRequests++;
+        }
+        int finalTotalRequests = totalRequests;
+
+        if (myLocationLatLon != null) {
+            String[] parts = myLocationLatLon.split(",");
+            mRepository.retrieveForecast(myLocationLatLon, new WeatherCallback() {
                 @Override
                 public void onSuccess(Weather result) {
                     if (currentGeneration != fetchGeneration) return;
                     synchronized (completedCount) {
-                        updatedList.add(result);
+                        result.setCurrentLocation(true);
+                        result.setName("Minha Localização");
+                        updatedList.add(0, result);
                         completedCount[0]++;
-                        if (completedCount[0] == localizations.size()) {
+                        if (completedCount[0] == finalTotalRequests) {
                             finishFetch(updatedList, hasError[0]);
                         }
                     }
@@ -95,7 +105,35 @@ public class MainViewModel extends AndroidViewModel {
                     synchronized (completedCount) {
                         hasError[0] = true;
                         completedCount[0]++;
-                        if (completedCount[0] == localizations.size()) {
+                        if (completedCount[0] == finalTotalRequests) {
+                            finishFetch(updatedList, true);
+                        }
+                    }
+                }
+            });
+        }
+
+        for (String latlon : localizations.values()) {
+            mRepository.retrieveForecast(latlon, new WeatherCallback() {
+                @Override
+                public void onSuccess(Weather result) {
+                    if (currentGeneration != fetchGeneration) return;
+                    synchronized (completedCount) {
+                        updatedList.add(result);
+                        completedCount[0]++;
+                        if (completedCount[0] == finalTotalRequests) {
+                            finishFetch(updatedList, hasError[0]);
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(String error) {
+                    if (currentGeneration != fetchGeneration) return;
+                    synchronized (completedCount) {
+                        hasError[0] = true;
+                        completedCount[0]++;
+                        if (completedCount[0] == finalTotalRequests) {
                             finishFetch(updatedList, true);
                         }
                     }
@@ -129,5 +167,14 @@ public class MainViewModel extends AndroidViewModel {
         isFetching = false;
         handler.removeCallbacks(fetchRunnable);
         fetchAllForecasts();
+    }
+
+    public String getMyLocationLatLon() {
+        return myLocationLatLon;
+    }
+
+    public void setCurrentLocation(String latLon) {
+        myLocationLatLon = latLon;
+        refresh();
     }
 }

@@ -10,6 +10,7 @@ public class Weather {
     private WeatherInfo main;
     private String name;
     private List<WeatherDetail> weather = new ArrayList<>();
+    private boolean isCurrentLocation;
 
     public Weather() {
     }
@@ -36,6 +37,14 @@ public class Weather {
 
     public void setWeather(List<WeatherDetail> weather) {
         this.weather = weather;
+    }
+
+    public boolean isCurrentLocation() {
+        return isCurrentLocation;
+    }
+
+    public void setCurrentLocation(boolean currentLocation) {
+        isCurrentLocation = currentLocation;
     }
 
     @NonNull
